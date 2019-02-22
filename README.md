@@ -1,4 +1,4 @@
-# FFF Facebook Friends Finder
+# FFFF - FFFF Finds Facebook Friends
 
 Build a partial friends list of a target Facebook account using the "mutual friends" utility.
 
@@ -56,7 +56,7 @@ Pivot accounts can be provided either as a comma separated list of integers via 
 A list of accounts to ignore as pivots can be provided as well (`--ignore-file`).
 
 ```
-usage: fff.py [-h] [-fu USERNAME] [-fp PASSWORD] [-t TARGET]
+usage: ffff.py [-h] [-fu USERNAME] [-fp PASSWORD] [-t TARGET]
               [-p PIVOTS [PIVOTS ...]] [-o OUTPUT] [-P PIVOTSFILE]
               [-I IGNOREFILE] [-r SESSION] [-q] [-d EXECUTABLE]
 
@@ -108,7 +108,7 @@ Adding the `-q` option makes the webdriver run in headless mode: no browser wind
 In the example, the Linux geckodriver executable is stored in the current directory. Geckodriver executables can be downloaded from [Mozilla repository](https://github.com/mozilla/geckodriver/releases). If you are using Windows and have downloaded the geckodriver.exe in the current directory, use `--driver geckodriver.exe`.
 
 ```
-fff.py -t 00000000 -p 00000001 -o results.csv -q --driver ./geckodriver
+ffff.py -t 00000000 -p 00000001 -o results.csv -q --driver ./geckodriver
 ```
 The session can be stopped (Ctrl+C) and resumed at a later time:
 
