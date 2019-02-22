@@ -73,7 +73,7 @@ optional arguments:
                         scraping
   -t TARGET, --target TARGET
                         Numeric id of the target Facebook account
-  -p PIVOTS [PIVOTS ...], --pivots PIVOTS [PIVOTS ...]
+  -p PIVOT [PIVOT ...], --pivots PIVOT [PIVOT ...]
                         Numeric id(s) of the Facebook accounts known to have
                         mutual friends with the target. Their friends list
                         must be public. Can be a single value or a comma
