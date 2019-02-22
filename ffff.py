@@ -12,7 +12,7 @@ GECKO_PATH = ''
 
 VERSION = "0.1"
 BANNER = """
-{0} v. {1} - FFF: Facebook Friends Finder
+{0} v. {1} - FFFF: FFFF Finds Facebook Friends
 
 by sowdust
 """.format(sys.argv[0],VERSION)
@@ -72,7 +72,10 @@ def get_friends(driver,usr1,usr2, url='https://www.facebook.com/browse/mutual_fr
             url = re.findall('href=[\'"]?([^\'" >]+)',s)
             name = re.findall('>[.*]?([^<]+)',s)
             friend = {}
-            friend['name'] = name[0].encode("utf-8", errors="ignore").decode()
+            try:
+                friend['name'] = name[0].encode("utf-8", errors="replace").decode("utf-8", errors="replace")
+            except:
+                friend['name'] = 'decoding error'
             friend['id'] = int(uid[0])
             friend['url'] = re.sub('(\?|\&amp.+)fref.*','',url[0])
             friends.append(friend)
@@ -262,7 +265,7 @@ def main():
     start = time.time()
     do_login(driver,usr,pwd)
 
-    with open(csv_file_path, mode=csv_write_mode,newline='') as csv_file:
+    with open(csv_file_path, mode=csv_write_mode,newline='',encoding='utf-8') as csv_file:
 
         writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         fieldnames = ['id', 'name', 'url']
