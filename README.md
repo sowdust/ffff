@@ -100,12 +100,12 @@ optional arguments:
 
 ### Examples
 
-The following example tries to build a subset of the friends list of target account id "00000000", pivoting on account "00000001", and finally storing the results in CSV file "results.csv".
+The following example usage tries to build a subset of the friends list of target account id "00000000", pivoting on account "00000001", and finally storing the results in CSV file "results.csv".
 
 
 Adding the `-q` option makes the webdriver run in headless mode: no browser window should be shown.
 
-In the example, the Linux geckodriver executable is stored in the current directory. Geckodriver executables can be downloaded from [mozilla repository](https://github.com/mozilla/geckodriver/releases). If you are using Windows and have downloaded the geckodriver.exe in the current directory, use `--driver geckodriver.exe`.
+In the example, the Linux geckodriver executable is stored in the current directory. Geckodriver executables can be downloaded from [Mozilla repository](https://github.com/mozilla/geckodriver/releases). If you are using Windows and have downloaded the geckodriver.exe in the current directory, use `--driver geckodriver.exe`.
 
 ```
 fff.py -t 00000000 -p 00000001 -o results.csv -q --driver ./geckodriver
