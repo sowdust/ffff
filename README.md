@@ -120,6 +120,6 @@ The result, a list of friends of the target, is provided as a csv file in the fo
 
 ## License
 
-This code is free
+This code is ffffree
 
 
