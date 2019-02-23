@@ -108,7 +108,7 @@ Adding the `-q` option makes the webdriver run in headless mode: no browser wind
 In the example, the Linux geckodriver executable is stored in the current directory. Geckodriver executables can be downloaded from [Mozilla repository](https://github.com/mozilla/geckodriver/releases). If you are using Windows and have downloaded the geckodriver.exe in the current directory, use `--driver-path geckodriver.exe`.
 
 ```
-ffff.py -t 00000000 -p 00000001 -o results.csv -q --driver-path ./geckodriver
+python3 ffff.py -t 00000000 -p 00000001 -o results.csv -q --driver-path ./geckodriver
 ```
 The session can be stopped (Ctrl+C) and resumed at a later time:
 
