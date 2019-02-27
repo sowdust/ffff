@@ -163,7 +163,7 @@ def parse_args():
     parser.add_argument('-fu', '--user', metavar='USERNAME', type=str, help='Username of the Facebook account that will be used for scraping')
     parser.add_argument('-fp', '--password', metavar='PASSWORD', type=str, help='Username of the Facebook account that will be used for scraping')
     parser.add_argument('-t', '--target', metavar='TARGET', type=int, help='Numeric id of the target Facebook account')
-    parser.add_argument('-p','--pivots', metavar='PIVOT', nargs='+', type=int, help='Numeric id(s) of the Facebook accounts known to have mutual friends with the target. Their friends list must be public. Can be a single value or a comma separated list of values.')
+    parser.add_argument('-p','--pivots', metavar='PIVOT', nargs='+', type=int, help='Numeric id(s) of the Facebook accounts known to have mutual friends with the target. Their friends list must be public. Can be a single value or a list of values separated by a space.')
     parser.add_argument('-o','--output', metavar='OUTPUT', type=str, help='Specify where to store output (in CSV format)')
     parser.add_argument('-P','--pivots-file', metavar='PIVOTSFILE', type=str, help='Load a list of Facebook ids to use as pivot accounts from file PIVOTSFILE. Numeric ids must be one per line. This option can be used together or in place of --pivots.')
     parser.add_argument('-I','--ignore-file', metavar='IGNOREFILE', type=str, help='Load a list of Facebook ids NOT to use as pivot accounts from file IGNOREFILE. Numeric ids must be one per line.')

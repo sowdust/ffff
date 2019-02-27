@@ -52,13 +52,13 @@ GECKO_PATH = 'C:\geckodriver.exe'
 Otherwise, they can be provided as a command line option.
 
 
-Pivot accounts can be provided either as a comma separated list of integers via command line (with the option `--pivots`), or one per row in a file (`--pivots-file`).
+Pivot accounts can be provided either as a list of integers separated by a space via command line (with the option `--pivots`), or one per row in a file (`--pivots-file`).
 A list of accounts to ignore as pivots can be provided as well (`--ignore-file`).
 
 ```
 usage: ffff.py [-h] [-fu USERNAME] [-fp PASSWORD] [-t TARGET]
-              [-p PIVOTS [PIVOTS ...]] [-o OUTPUT] [-P PIVOTSFILE]
-              [-I IGNOREFILE] [-r SESSION] [-q] [-d EXECUTABLE]
+               [-p PIVOT [PIVOT ...]] [-o OUTPUT] [-P PIVOTSFILE]
+               [-I IGNOREFILE] [-r SESSION] [-q] [-d EXECUTABLE]
 
 Recursively build friends list of Facebook users by exploiting the "mutual
 friends" utility.
@@ -76,8 +76,8 @@ optional arguments:
   -p PIVOT [PIVOT ...], --pivots PIVOT [PIVOT ...]
                         Numeric id(s) of the Facebook accounts known to have
                         mutual friends with the target. Their friends list
-                        must be public. Can be a single value or a comma
-                        separated list of values.
+                        must be public. Can be a single value or a list of
+                        values separated by a space.
   -o OUTPUT, --output OUTPUT
                         Specify where to store output (in CSV format)
   -P PIVOTSFILE, --pivots-file PIVOTSFILE
