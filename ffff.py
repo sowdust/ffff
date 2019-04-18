@@ -1,21 +1,50 @@
 import re, os, csv, sys, time
 import json, random, argparse
+import io, pickle, codecs
+import networkx as nx, builtins
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
+from selenium.common.exceptions import TimeoutException
 
 FB_USR = ''
 FB_PWD = ''
 GECKO_PATH = ''
 
 
-VERSION = "0.1"
+VERSION = "0.2"
 BANNER = """
 {0} v. {1} - FFFF: FFFF Finds Facebook Friends
 
 by sowdust
 """.format(sys.argv[0],VERSION)
+
+
+class RestrictedUnpickler(pickle.Unpickler):
+    
+    safe_builtins = {
+        'range',
+        'complex',
+        'set',
+        'frozenset',
+        'slice',
+        'dict'
+    }
+
+    def find_class(self, module, name):
+        if module in "builtins" and name in self.safe_builtins:
+            return getattr(builtins, name)
+        elif module == "networkx.classes.graph" and name == "Graph":
+            return getattr(nx, name)
+        # Forbid everything else.
+        raise pickle.UnpicklingError("Cannot unserialize '%s.%s'. Forbidden" %
+                                     (module, name))
+
+
+def restricted_loads(s):
+    s = codecs.decode(s.encode(), "base64")
+    return RestrictedUnpickler(io.BytesIO(s)).load()
 
 
 def pause(min=2,max=5):
@@ -25,17 +54,32 @@ def pause(min=2,max=5):
 def log(msg):    return
 
 
+def profile_picture_url(fbid,size=200):
+    return 'https://graph.facebook.com/%d/picture?width=%d' % (fbid,size)
+
+
 def do_login(driver,usr,pwd):
 
     log('[*] Trying to log in with user %s' % usr)
-    driver.get("http://www.facebook.org")
+    driver.get('https://www.facebook.com')
     assert "Facebook" in driver.title
-    elem = driver.find_element_by_id("email")
+    elem = driver.find_element_by_id('email')
     elem.send_keys(usr)
-    elem = driver.find_element_by_id("pass")
+    elem = driver.find_element_by_id('pass')
     elem.send_keys(pwd)
     elem.send_keys(Keys.RETURN)
     log('[*] Logged in')
+    time.sleep(pause(2,3))
+
+
+def get_target_info(target,driver):
+    driver.get('https://www.facebook.com/%s' % target)
+    time.sleep(pause())
+    try:
+        name = re.findall('"Person","name":"([^"]+)"',driver.page_source)[0]
+    except:
+        name = 'TARGET'
+    return [name,driver.current_url]
 
 
 def check_file_exists(file):
@@ -47,12 +91,22 @@ def check_file_exists(file):
             sys.exit(0)
 
 
-def get_friends(driver,usr1,usr2, url='https://www.facebook.com/browse/mutual_friends/?uid=%s&node=%s'):
+def get_friends(driver,usr1,usr2,graph,url='https://www.facebook.com/browse/mutual_friends/?uid=%s&node=%s'):
 
     friends = []
     final_url = url % (usr1,usr2)
     log('[*] Trying to retrieve url %s' % final_url)
-    driver.get(final_url)
+
+    attempts = 0
+
+    while attempts < 5:
+        try:
+            driver.get(final_url)
+            break
+        except TimeoutException as ex:
+            print('[!] TimeoutException. Attempt #%d' % attempts)
+            attempts +=1
+            pause(attempts*10,attempts*10)
 
     # Scroll to bottom of the page
     last_height = driver.execute_script("return document.body.scrollHeight")
@@ -66,11 +120,18 @@ def get_friends(driver,usr1,usr2, url='https://www.facebook.com/browse/mutual_fr
     
     try:
         users = driver.find_elements_by_css_selector("div[class='fsl fwb fcb']")
+
         for user in users:
             s = user.get_attribute('innerHTML')
-            uid = re.findall('/ajax/hovercard/user.php\?id=([0-9]*)(?:"|&amp;)',s)
-            url = re.findall('href=[\'"]?([^\'" >]+)',s)
-            name = re.findall('>[.*]?([^<]+)',s)
+
+            try:
+                uid = re.findall('/ajax/hovercard/user.php\?id=([0-9]*)(?:"|&amp;)',s)
+                url = re.findall('href=[\'"]?([^\'" >]+)',s)
+                name = re.findall('>[.*]?([^<]+)',s)
+            except:
+                print('[!] Error! Cannot read data from HTML page')
+                continue
+
             friend = {}
             try:
                 friend['name'] = name[0].encode("utf-8", errors="replace").decode("utf-8", errors="replace")
@@ -79,6 +140,10 @@ def get_friends(driver,usr1,usr2, url='https://www.facebook.com/browse/mutual_fr
             friend['id'] = int(uid[0])
             friend['url'] = re.sub('(\?|\&amp.+)fref.*','',url[0])
             friends.append(friend)
+
+            graph = update_graph(graph,usr1,usr2,friend)
+            
+
     except Exception as ex:
         print('[!] Error! %s' % ex)
         raise
@@ -86,16 +151,32 @@ def get_friends(driver,usr1,usr2, url='https://www.facebook.com/browse/mutual_fr
     return friends
 
 
-def get_all_friends(target,pivots,driver,writer,file,tested,friends,args,session_args):
+def update_graph(G,usr1,usr2,friend):
+
+    G.add_node(friend['id'], label=friend['name'], url=friend['url'], img=profile_picture_url(friend['id']))
+
+    for usr in [usr1,usr2]:
+
+        if G.has_edge(usr,friend['id']):
+            # increment weight
+            G[usr][friend['id']]['weight'] += 1
+        else:
+            # add new edge
+            G.add_edge(usr,friend['id'], weight=1)
+
+    return G
+
+
+def get_all_friends(target,pivots,driver,writer,file,tested,friends,args,session_args,graph):
     
     msg = ''
     try:
         while pivots:
 
             time.sleep(pause())
-            fid = pivots.pop()
+            fid = pivots[0]
             count_new = count_old = 0
-            for g in get_friends(driver,target,fid):
+            for g in get_friends(driver,target,fid,graph):
                 # add all new friends to queue of pivot points
                 if g['id'] not in tested and g['id'] not in pivots:
                     pivots.append(g['id'])
@@ -110,16 +191,18 @@ def get_all_friends(target,pivots,driver,writer,file,tested,friends,args,session
 
             file.flush()
             tested.append(fid)
+            del(pivots[0])
 
             msg = '%s%d Found      %d Tested      %d To test      Last pivot: %d' % ('\r'*len(msg),len(friends),len(tested),len(pivots),fid)
             print(msg, end='\r')
 
     except (KeyboardInterrupt, SystemExit):
-        # print('\n Exiting...')
-        interrupt(target,file,driver,pivots,tested,friends,session_args)
+        print('\n[!] KeyboardInterrupt received. Quitting.\n')
+        interrupt(target,file,driver,pivots,tested,friends,session_args,graph)
     except Exception as ex:
-        print('\n[!] Error: %s' % ex)
-        interrupt(target,file,driver,pivots,tested,friends,session_args)
+        # traceback.print_exc()
+        print('\n\n[!] Error: %s. Quitting.\n' % ex)
+        interrupt(target,file,driver,pivots,tested,friends,session_args,graph)
 
     print('')
     return friends
@@ -134,7 +217,7 @@ def load_ids_from_file(file):
     return tested
 
 
-def interrupt(target,csv_file,driver,pivots,tested,friends,session_args):
+def interrupt(target,csv_file,driver,pivots,tested,friends,session_args,graph):
 
     cur_time = time.strftime('%Y%m%d%H%M%S')
     session = {}
@@ -144,17 +227,25 @@ def interrupt(target,csv_file,driver,pivots,tested,friends,session_args):
     session['pivots'] = pivots
     session['friends'] = friends
     session['output'] = csv_file.name
+    session['graph'] = codecs.encode(pickle.dumps(graph), "base64").decode()
     session_file = 'session-%s-%s' % (target,cur_time)
+
+    print('\nExiting. Storing state to file...\n')
+
     with open(session_file, 'w') as outfile:
         json.dump(session, outfile)
-    print('Session stored to file %s. Use \"--resume %s\" to resume from here' % (session_file, session_file))
-    csv_file.flush()
-    csv_file.close()
-    print('Partial results written to csv file %s' % csv_file.name)
+    if not csv_file.closed:
+        csv_file.flush()
+        csv_file.close()
+    nx.write_gexf(graph,session_args['graph_output'])
     driver.quit()
-    # print('[*] Driver closed. Exiting...')
-    sys.exit(0)
 
+    print('...session state: %s' % session_file)
+    print('...friends found: %s' % csv_file.name)
+    print('...friendship graph: %s' % session_args['graph_output'])
+    print('\nUse \"--resume %s\" to restart from here. Bye.\n' % session_file)
+
+    sys.exit(0)
 
 
 def parse_args():
@@ -164,7 +255,8 @@ def parse_args():
     parser.add_argument('-fp', '--password', metavar='PASSWORD', type=str, help='Username of the Facebook account that will be used for scraping')
     parser.add_argument('-t', '--target', metavar='TARGET', type=int, help='Numeric id of the target Facebook account')
     parser.add_argument('-p','--pivots', metavar='PIVOT', nargs='+', type=int, help='Numeric id(s) of the Facebook accounts known to have mutual friends with the target. Their friends list must be public. Can be a single value or a list of values separated by a space.')
-    parser.add_argument('-o','--output', metavar='OUTPUT', type=str, help='Specify where to store output (in CSV format)')
+    parser.add_argument('-o','--output', metavar='OUTPUTFILE', type=str, help='Specify where to store list of friends found in CSV format')
+    parser.add_argument('-g','--graph-output', metavar='GRAPHFILE', type=str, help='Specify where to store graph in GEXF (Graph Exchange XML Format) format')
     parser.add_argument('-P','--pivots-file', metavar='PIVOTSFILE', type=str, help='Load a list of Facebook ids to use as pivot accounts from file PIVOTSFILE. Numeric ids must be one per line. This option can be used together or in place of --pivots.')
     parser.add_argument('-I','--ignore-file', metavar='IGNOREFILE', type=str, help='Load a list of Facebook ids NOT to use as pivot accounts from file IGNOREFILE. Numeric ids must be one per line.')
     parser.add_argument('-r','--resume', metavar='SESSION', type=str, help='Resume a previous session from file SESSION')
@@ -186,6 +278,12 @@ def main():
         print('[!] Error: valid facebook credentials must be provided')
         sys.exit(0)
 
+    pivots = args.pivots if args.pivots else []
+    if args.pivots_file:
+        pivots_from_file = load_ids_from_file(args.pivots_file)
+        print('Loaded %d facebook ids to use for pivoting.' % len(pivots_from_file))
+        pivots += pivots_from_file
+
     if args.resume:
 
         if not os.path.isfile(args.resume):
@@ -200,7 +298,8 @@ def main():
                 print('[!] Error: target provided differs from the one stored in session file')
                 sys.exit(0)            
             tested = session['tested']
-            pivots = session['pivots']
+            # you can add pivots from command line
+            pivots = list((set(pivots) - set(session['tested']))| set(session['pivots']))   
             friends = session['friends']
             csv_file_path = args.output if args.output else session['output']
             csv_write_mode = 'w'
@@ -208,6 +307,8 @@ def main():
             if args.headless or session['args']['headless']: options.add_argument("--headless")
             driver_path = session['args']['driver_path'] if session['args']['driver_path']  else GECKO_PATH
             session_args = session['args']
+            graph = restricted_loads(session['graph'])
+            graph_output = session_args['graph_output']
 
     else:
 
@@ -217,53 +318,61 @@ def main():
 
         target = args.target
         if not args.target:
-            print('[!] Error. You must specify the ID of the target Facebook profile')
+            print('\n[!] Error. You must specify the ID of the target Facebook profile')
             sys.exit(0)
 
         if not args.output:
             csv_file_path = '%d-friends.csv' % target
             print('Output file not specified. Results will be stored in %s' % csv_file_path)
-            session_args['output'] 
+            session_args['output'] = csv_file_path
         else:
             csv_file_path = args.output
+
+        if not args.graph_output:
+            graph_output = '%d-friends.gexf' % target
+            print('Graph Output file not specified. Results will be stored in %s' % graph_output)
+            session_args['graph_output'] = graph_output
+        else:
+            graph_output = args.graph_output
         
         options = Options()
         if args.headless: options.add_argument("--headless")
         driver_path = args.driver_path if args.driver_path  else GECKO_PATH
         if not driver_path:
-            print('[!] Error: the path to the geckodriver executable file must be provided')
+            print('\n[!] Error: the path to the geckodriver executable file must be provided')
             print('Geckodriver executables can be downloaded from https://github.com/mozilla/geckodriver/releases')
+            sys.exit(0)
 
-
-        # Read ids of already tested files
         if args.ignore_file:
             tested = load_ids_from_file(args.ignore_file)
             print('Loaded %d facebook ids already used for pivoting. They will be skipped if found again.' % len(tested))
         else:
             tested = []
 
-        # read ids of pivots
-        pivots = args.pivots if args.pivots else []
-        if args.pivots_file:
-            pivots_from_file = load_ids_from_file(args.pivots_file)
-            print('Loaded %d facebook ids to use for pivoting.' % len(pivots_from_file))
-            pivots += pivots_from_file
         if not pivots:
-            print('[!] Error. Empty pivot list.')
+            print('\n[!] Error. Empty pivot list. If the target user friend list is public, just use its id as pivot (add "-p %d")' % target)
             sys.exit(0)
 
         friends = []
-
         csv_write_mode = 'w'
+        graph = nx.Graph()
 
 
+    print('')    
     check_file_exists(csv_file_path)
+    check_file_exists(graph_output)
 
     # fetch and write friends
     driver = webdriver.Firefox(executable_path=driver_path,options=options)
-    print('\nFetching friends of target user %d...\n' % target)
     start = time.time()
     do_login(driver,usr,pwd)
+
+    if 'target_name' not in session_args.keys():
+        [session_args['target_name'],session_args['target_url']] = get_target_info(target,driver)
+        graph.add_node(target, label=session_args['target_name'], url=session_args['target_url'],img=profile_picture_url(target))
+
+    print('\nFetching friends of target user "%s" (%d)...\n' % (session_args['target_name'], target))
+    
 
     with open(csv_file_path, mode=csv_write_mode,newline='',encoding='utf-8') as csv_file:
 
@@ -278,19 +387,16 @@ def main():
                     writer.writerow(f)
                 csv_file.flush()
 
-        friends = get_all_friends(target,pivots,driver,writer,csv_file,tested,friends,args,session_args)
+        friends = get_all_friends(target,pivots,driver,writer,csv_file,tested,friends,args,session_args,graph)
 
-
-    driver.quit()
     end = time.time()
-    print(end - start)
 
-    print('')
-    print('Found a total of %d friends in %.2f' % ( len(friends), (end-start)*1000))
-    print('')
     lengths = [len(x['name']) for x in friends]
     for f in friends:
         print("{: >10} {: >20} {: >20}".format(f['id'],f['name'],f['url']))
+
+    print('Found a total of %d friends in %.2f' % (len(friends), end-start))
+    interrupt(target,csv_file,driver,pivots,tested,friends,session_args,graph)
 
 
 if __name__ == '__main__':
