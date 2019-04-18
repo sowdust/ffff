@@ -12,8 +12,8 @@ Scraping without written permission is against Facebook [Terms of Services](http
 
 ## About
 
-Facebook offers a function to list some friends two accounts have in common, called "mutual friends", if at least one of the accounts' lists is visible to the observer.
-This function can be applied recursively over all mutual friends found, possibly yielding a larger set of friends. This way it is possible to partially reconstruct a hidden friend list.
+Facebook offers a function to list some friends two accounts have in common, called "mutual friends". It works only if at least one of the accounts' lists is visible to the observer.
+In order to partially reconstruct a hidden friend list, this function can be applied recursively over all mutual friends found at each step.
 
 It is also possible to keep track of the relationships between users along the way, by connecting them in a graph, assigning weights based on how many times a relationship has been observed during the procedure. In this way it is possible to attempt at identifying communities within the network.
 
@@ -24,13 +24,13 @@ The mutual friends functionality only works if at least one of the two users com
 Furthermore, Facebook limits the number of mutual friends that are shown. It seems that using different accounts sometimes lead to different results. It might be worth giving a try - maybe using accounts from different locations.
 
 
-### Prerequisites
+## Prerequisites
 
-The script works in Python 3 with the libraries `selenium`, `argparse` and  `networkx`.
+The script works in Python 3 with the libraries `selenium`, `argparse` and  `networkx`. You can install them by running:
 
 ```pip3 install -r requirements.txt```
 
-As of now it supports only Firefox webdriver. The [geckodriver executable](https://github.com/mozilla/geckodriver/releases) must be downloaded and stored locally.
+As of now the script supports only Firefox webdriver. The [geckodriver executable](https://github.com/mozilla/geckodriver/releases) must be downloaded and stored locally.
 Support for more webdrivers can be easily added if necessary - just ask!
 
 
@@ -39,14 +39,16 @@ Support for more webdrivers can be easily added if necessary - just ask!
 
 ### Required information
 
-##### TL;DR:
+#### TL;DR:
 
-* Facebook user
-* Facebook password
+To run the script the following information is required:
+
+* Valid Facebook credentials (user/password)
 * Target account Facebook id
-* One or more "pivot" account Facebook id (if target friend list is hidden)
+* One or more "pivot" account ids (if target friend list is hidden)
 * Path to the Geckodriver file
 
+#### Instructions
 
 The script works with Facebook numeric account ids.
 There are several ways to find out an account numeric id, including many online services such as [findmyfbid.com](https://findmyfbid.com/) or [graph.tips](http://graph.tips/).
@@ -56,11 +58,15 @@ A set of valid credentials (username and password) of a Facebook account to be u
 __Warning__: Accounts used for scraping are not allowed without permission, and can therefore be locked by Facebook anti-scraping mechanisms.
 If you have a developer account, you could try using a [test account](https://developers.facebook.com/docs/apps/test-users/).
 
-If the target account friend list is hidden, it is also necessary to provide the script at least one "pivot" account, ie.: one account that has their friend list public and at least one mutual friend with the target. A common way to find one is to look at users who reacted to content published by the target. Obviously the more pivots are provided, the better. If there are many pivots, they can be stored in a file, one per line. In order to see mutual friends between two users, visit the url `https://www.facebook.com/browse/mutual_friends/?uid=USER1&node=USER2`, where `USER1` and `USER2` are the two users' numeric ids. 
+If the target account friend list is hidden, it is also necessary to provide the script at least one "pivot" account, ie.: one account that has their friend list public and at least one mutual friend with the target.
+A common way to find a suitable pivot account is to look at users who reacted to content published by the target.
+Obviously the more pivots are provided, the better.
+If there are many pivots, they can be stored in a file, one per line.
+In order to check if mutual friends between two users are visible, visit the url `https://www.facebook.com/browse/mutual_friends/?uid=USER1&node=USER2`, where `USER1` and `USER2` are the two users' numeric ids. 
 
-If the friend list is public, no pivots are necessary. Just provide the target account id also as a pivot.
+If the friend list is public, no pivots are necessary: just provide the target account id also as a pivot.
 
-It is also necessary to know the local path in which you have stored the geckodriver executable was placed. 
+It is also necessary to know the local path in which you have stored the geckodriver executable. 
 
 Some options (the facebook credentials and the the driver executables) can be hardcoded inside the script source code:
 ```
@@ -142,7 +148,6 @@ The session can be stopped (Ctrl+C) and resumed at a later time:
 ```
 ^CSession stored to file session-00000000-20190221232552. Use "--resume session-00000000-20190221232552" to resume from here
 ```
-The result, a list of friends of the target, is provided as a csv file in the form `account id, account name, account url`).
 
 #### Other examples
 
@@ -169,6 +174,12 @@ The scripts produces three output files:
 * one .gexf file containing the annotated graph that can be opened using [Gephi](https://gephi.org/)
 * one session file that can be used to resume the work (e.g.: in case more pivots are found at a later time)
 
+
+## Screenshots
+
+![Running the program against a colleague profile](https://i.ibb.co/yQgcc5T/screenshot2.png)
+
+![Displaying the colleagues friendships in Gephi](https://i.ibb.co/mTxF5fr/screenshot.png)
 
 ## License
 
