@@ -179,7 +179,8 @@ The scripts produces three output files:
 
 ![Running the program against a colleague profile](https://i.ibb.co/yQgcc5T/screenshot2.png)
 
-![Displaying the colleagues friendships in Gephi](https://i.ibb.co/mTxF5fr/screenshot.png)
+![Displaying the colleagues friendships in Gephi](https://i.ibb.co/3rkpksr/screenshot.png)
+
 
 ## License
 
