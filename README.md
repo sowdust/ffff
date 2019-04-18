@@ -18,6 +18,13 @@ In order to partially reconstruct a hidden friend list, this function can be app
 It is also possible to keep track of the relationships between users along the way, by connecting them in a graph, assigning weights based on how many times a relationship has been observed during the procedure. In this way it is possible to attempt at identifying communities within the network.
 
 
+## Screenshots
+
+![Running the program against a colleague profile](https://i.ibb.co/yQgcc5T/screenshot2.png)
+
+![Displaying the colleagues friendships in Gephi](https://i.ibb.co/3rkpksr/screenshot.png)
+
+
 ## Limitations
 
 The mutual friends functionality only works if at least one of the two users compared have their friend list public. 
@@ -173,13 +180,6 @@ The scripts produces three output files:
 * one .csv file containing the list of friends found, in the form `account id, account name, account url`
 * one .gexf file containing the annotated graph that can be opened using [Gephi](https://gephi.org/)
 * one session file that can be used to resume the work (e.g.: in case more pivots are found at a later time)
-
-
-## Screenshots
-
-![Running the program against a colleague profile](https://i.ibb.co/yQgcc5T/screenshot2.png)
-
-![Displaying the colleagues friendships in Gephi](https://i.ibb.co/3rkpksr/screenshot.png)
 
 
 ## License
