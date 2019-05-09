@@ -93,7 +93,7 @@ The session can be interrupted (Ctrl+C) and resumed at a later time. This is als
 ```
 usage: ffff.py [-h] [-fu USERNAME] [-fp PASSWORD] [-t TARGET]
                [-p PIVOT [PIVOT ...]] [-o OUTPUTFILE] [-g GRAPHFILE]
-               [-P PIVOTSFILE] [-I IGNOREFILE] [-r SESSION] [-q]
+               [-P PIVOTSFILE] [-I IGNOREFILE] [-r SESSION] [-q] [-w]
                [-d EXECUTABLE]
 
 Recursively build friends list of Facebook users by exploiting the "mutual
@@ -133,8 +133,11 @@ optional arguments:
                         Resume a previous session from file SESSION
   -q, --headless        Run browser in headless mode. No browser window will
                         be shown.
+  -w, --store-weights   Assign weights based on how many times a relationship
+                        is observed.
   -d EXECUTABLE, --driver-path EXECUTABLE
                         Path to geckodriver executable
+
 ```
 
 ### Examples
