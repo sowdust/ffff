@@ -91,7 +91,7 @@ def check_file_exists(file):
             sys.exit(0)
 
 
-def get_friends(driver,usr1,usr2,graph,url='https://www.facebook.com/browse/mutual_friends/?uid=%s&node=%s'):
+def get_friends(driver,usr1,usr2,graph,store_weights,url='https://www.facebook.com/browse/mutual_friends/?uid=%s&node=%s'):
 
     friends = []
     final_url = url % (usr1,usr2)
@@ -141,7 +141,7 @@ def get_friends(driver,usr1,usr2,graph,url='https://www.facebook.com/browse/mutu
             friend['url'] = re.sub('(\?|\&amp.+)fref.*','',url[0])
             friends.append(friend)
 
-            graph = update_graph(graph,usr1,usr2,friend)
+            graph = update_graph(graph,usr1,usr2,friend,store_weights)
             
 
     except Exception as ex:
@@ -151,13 +151,13 @@ def get_friends(driver,usr1,usr2,graph,url='https://www.facebook.com/browse/mutu
     return friends
 
 
-def update_graph(G,usr1,usr2,friend):
+def update_graph(G,usr1,usr2,friend,store_weights):
 
     G.add_node(friend['id'], label=friend['name'], url=friend['url'], img=profile_picture_url(friend['id']))
 
     for usr in [usr1,usr2]:
 
-        if G.has_edge(usr,friend['id']):
+        if G.has_edge(usr,friend['id']) and store_weights:
             # increment weight
             G[usr][friend['id']]['weight'] += 1
         else:
@@ -167,7 +167,7 @@ def update_graph(G,usr1,usr2,friend):
     return G
 
 
-def get_all_friends(target,pivots,driver,writer,file,tested,friends,args,session_args,graph):
+def get_all_friends(target,pivots,driver,writer,file,tested,friends,args,session_args,graph,store_weights):
     
     msg = ''
     try:
@@ -176,7 +176,7 @@ def get_all_friends(target,pivots,driver,writer,file,tested,friends,args,session
             time.sleep(pause())
             fid = pivots[0]
             count_new = count_old = 0
-            for g in get_friends(driver,target,fid,graph):
+            for g in get_friends(driver,target,fid,graph,store_weights):
                 # add all new friends to queue of pivot points
                 if g['id'] not in tested and g['id'] not in pivots:
                     pivots.append(g['id'])
@@ -261,6 +261,7 @@ def parse_args():
     parser.add_argument('-I','--ignore-file', metavar='IGNOREFILE', type=str, help='Load a list of Facebook ids NOT to use as pivot accounts from file IGNOREFILE. Numeric ids must be one per line.')
     parser.add_argument('-r','--resume', metavar='SESSION', type=str, help='Resume a previous session from file SESSION')
     parser.add_argument('-q', '--headless', action='store_true', help='Run browser in headless mode. No browser window will be shown.')
+    parser.add_argument('-w', '--store-weights', action='store_true', help='Assign weights based on how many times a relationship is observed.')
     parser.add_argument('-d','--driver-path', metavar='EXECUTABLE', type=str, help='Path to geckodriver executable')
     args = parser.parse_args(args=None if len(sys.argv) > 1 else ['--help'])
 
@@ -306,6 +307,7 @@ def main():
             options = Options()
             if args.headless or session['args']['headless']: options.add_argument("--headless")
             driver_path = session['args']['driver_path'] if session['args']['driver_path']  else GECKO_PATH
+            store_weights = session['args']['store_weights']
             session_args = session['args']
             graph = restricted_loads(session['graph'])
             graph_output = session_args['graph_output']
@@ -353,6 +355,7 @@ def main():
             print('\n[!] Error. Empty pivot list. If the target user friend list is public, just use its id as pivot (add "-p %d")' % target)
             sys.exit(0)
 
+        store_weights = args.store_weights
         friends = []
         csv_write_mode = 'w'
         graph = nx.Graph()
@@ -387,7 +390,7 @@ def main():
                     writer.writerow(f)
                 csv_file.flush()
 
-        friends = get_all_friends(target,pivots,driver,writer,csv_file,tested,friends,args,session_args,graph)
+        friends = get_all_friends(target,pivots,driver,writer,csv_file,tested,friends,args,session_args,graph,store_weights)
 
     end = time.time()
 

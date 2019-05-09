@@ -15,7 +15,7 @@ Scraping without written permission is against Facebook [Terms of Services](http
 Facebook offers a function to list some friends two accounts have in common, called "mutual friends". It works only if at least one of the accounts' lists is visible to the observer.
 In order to partially reconstruct a hidden friend list, this function can be applied recursively over all mutual friends found at each step.
 
-It is also possible to keep track of the relationships between users along the way, by connecting them in a graph, assigning weights based on how many times a relationship has been observed during the procedure. In this way it is possible to attempt at identifying communities within the network.
+It is also possible to keep track of the relationships between users along the way, by connecting them in a graph, assigning weights based on how many times a relationship has been observed during the procedure. In this way it is possible to identify communities within the network.
 
 
 ## Screenshots
