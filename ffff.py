@@ -379,7 +379,6 @@ def main():
 
     with open(csv_file_path, mode=csv_write_mode,newline='',encoding='utf-8') as csv_file:
 
-        writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         fieldnames = ['id', 'name', 'url']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         if csv_write_mode == 'w':
