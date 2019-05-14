@@ -113,7 +113,7 @@ def get_all_comments(driver,url,limit=200,cur_length=0):
     more_comments_url = re.findall('<div class=".[^"]*" id="see_next_[0-9]+"><a href="(.[^"]*)">',html)
     more_comments_url = ['%s%s'% (BASE_URL,x.replace('&amp;','&')) for x in more_comments_url]
 
-    if(more_comments_url):
+    if(more_comments_url) and limit > cur_length:
         time.sleep(pause())
         url = more_comments_url[0]
         commenters += get_all_comments(driver,url,limit,cur_length)
@@ -136,7 +136,7 @@ def get_all_reactions(driver,url,reactions_per_page=999,limit=2000,cur_length=0)
     reaction_urls = re.findall('(/ufi/reaction/profile/browser/(?!.*(?:reaction_type|total_count=0)).[^"]*)',html)
     reaction_urls = ['%s%s'% (BASE_URL,x.replace('&amp;','&').replace('?limit=10','?limit=%d' % reactions_per_page)) for x in reaction_urls]
 
-    if(reaction_urls):
+    if(reaction_urls) and limit > cur_length:
         time.sleep(pause())
         url= reaction_urls[0]
         reactions += get_all_reactions(driver,url,reactions_per_page,limit,cur_length)
