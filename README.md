@@ -48,7 +48,6 @@ As of now the script supports only Firefox webdriver. The [geckodriver executabl
 Support for more webdrivers can be easily added if necessary - just ask!
 
 
-
 ## Usage
 
 ### Required information
@@ -59,7 +58,7 @@ To run the script ffff the following information is required:
 
 * Valid Facebook credentials (user/password)
 * Target account Facebook id
-* One or more "pivot" account ids (if target friend list is hidden)
+* One or more "pivot" account ids (if target friend list is hidden) - you can use fint.py for this 
 * Path to the Geckodriver file
 
 #### Instructions
@@ -77,6 +76,9 @@ A common way to find a suitable pivot account is to look at users who reacted to
 Obviously the more pivots are provided, the better.
 If there are many pivots, they can be stored in a file, one per line.
 In order to check if mutual friends between two users are visible, visit the url `https://www.facebook.com/browse/mutual_friends/?uid=USER1&node=USER2`, where `USER1` and `USER2` are the two users' numeric ids. 
+
+One way to find pivot accounts is to use the auxiliary script `fint.py`. This script will provide a list of users who have interacted with the target. 
+Run `fint.py -h` to have a list of command line options. This script will produce a txt file with a list of potential pivots; this file can later be fed to ffff.py by using the `-P` (`--pivots-file`) option.
 
 If the friend list is public, no pivots are necessary: just provide the target account id also as a pivot.
 
@@ -168,6 +170,11 @@ The session can be stopped (Ctrl+C) and resumed at a later time:
 
 #### Other examples
 
+Use fint.py to find potential pivot accounts for target user 111111111, using the most recent 10 stories and 5 photos published, using a maximum of 100 comments and 1000 reactions: 
+```
+python fint.py -fu fbuser@mediaservice.net -fp fbpassword -d geckodriver.exe -t 4 -ls 10 -lp 5 -lc 100 -lr 1000
+```
+
 Build the community graph of target user 111111111 with public friend list, showing the browser window (without using option `-q`). Geckodriver file is stored in `C:`:
 ```
 python3 ffff.py -fu myaccount@facebook.com -fp Passw0rd -t 111111111 -p 111111111 --driver-path C:\geckodriver.exe 
@@ -185,15 +192,19 @@ python3 ffff.py -fu myaccount@facebook.com -fp Passw0rd --resume session-0000000
 
 ## Output
 
-The scripts produces three output files:
+The scripts ffff.py produces three output files:
 
 * one .csv file containing the list of friends found, in the form `account id, account name, account url`
 * one .gexf file containing the annotated graph that can be opened using [Gephi](https://gephi.org/)
 * one session file that can be used to resume the work (e.g.: in case more pivots are found at a later time)
 
 
+The script fint.py produces two output files:
+* one .txt file containing a list of account ids that can be used as a list of pivots for ffff
+* one .csv file (optional) containing a list of potential pivots in the form `id,name,url`
+It also prints out statistics on who are the users who have interacted the most.
+
 ## License
 
 This code is ffffree
-
 
