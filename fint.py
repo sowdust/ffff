@@ -109,14 +109,13 @@ def get_all_comments(driver,url,limit=200,cur_length=0):
 
     commenters = parse_commenters(html)
     cur_length += len(commenters)
-
     more_comments_url = re.findall('<div class=".[^"]*" id="see_next_[0-9]+"><a href="(.[^"]*)">',html)
     more_comments_url = ['%s%s'% (BASE_URL,x.replace('&amp;','&')) for x in more_comments_url]
 
     if(more_comments_url) and limit > cur_length:
         time.sleep(pause())
         url = more_comments_url[0]
-        commenters += get_all_comments(driver,url,limit,cur_length)
+        commenters += get_all_comments(driver,url,limit,cur_length=cur_length)
     return commenters
 
 
@@ -145,7 +144,7 @@ def get_all_reactions(driver,url,reactions_per_page=999,limit=2000,cur_length=0)
 
 # Given a story.php page, return a list of (url, display name)
 def parse_commenters(html):
-    return re.findall('<h3><a class="[^"]+" href="([^"]+)\?ref[^"]*">([^<]*)</a>',html)
+    return re.findall('<h3><a class="[^"]+" href="([^"]+)\?r[^"]*">([^<]*)</a>',html)
 
 
 # Given a "reactions" page ufi/reaction/profile/browser/, returns a list of (url, display name) 
@@ -166,15 +165,22 @@ def fill_user_ids(driver,users):
     res = []
     c = 0
     msg = '[*] Retreiving user ids... '
-    for u in users:
-        c += 1
-        msg = '%s[*] Retreiving user ids... %d of %d' % ('\r'*len(msg),c,len(users))
-        print(msg, end='\r')
-        time.sleep(pause())
-        fbid = get_user_id(driver,u[0])
-        user = (fbid, u[1], u[0])
-        res.append(user)
-
+    try:
+        for u in users:
+            c += 1
+            msg = '%s[*] Retreiving user ids... %d of %d' % ('\r'*len(msg),c,len(users))
+            print(msg, end='\r')
+            time.sleep(pause())
+            fbid = get_user_id(driver,u[0])
+            user = (fbid, u[1], u[0])
+            res.append(user)
+    except (KeyboardInterrupt, SystemExit):
+        print('[!] KeyboardInterrupt received. Exiting...')
+        return res
+    except Exception as ex:
+        print('[!] Error while retrieving user ids')
+        print(ex)
+        return res
     return res
 
 
@@ -296,21 +302,32 @@ def main():
     stories = get_all_stories(driver,target_id,args.limit_stories)[:args.limit_stories]
     print('%d stories found' % len(stories))
 
-    print('[*] Retreiving users who have interacted...')
-    for url in photos + stories:
+    print('[*] Retreiving users who have interacted... press Ctrl+C when you have enough')
 
-        commenters += parse_commenters(driver.page_source)
-        if len(commenters) < args.limit_comments:
-            commenters += get_all_comments(driver,url,limit=args.limit_comments)
+    msg = ''
+    try:
+        for url in photos + stories:
 
-        if len(reactions) < args.limit_reactions:
-            reactions += get_all_reactions(driver,url,limit=args.limit_reactions)
+            commenters += parse_commenters(driver.page_source)
+            if len(commenters) < args.limit_comments:
+                commenters += get_all_comments(driver,url,limit=args.limit_comments)
+
+            if len(reactions) < args.limit_reactions:
+                reactions += get_all_reactions(driver,url,limit=args.limit_reactions)
+
+            users = list(set(reactions).union(set(commenters)))
+            msg = '%sUnique users: %d        Comments: %d        Reactions: %d' % ('\r'*len(msg),len(users),len(commenters),len(reactions))
+            print(msg, end='\r')
+
+    except (KeyboardInterrupt, SystemExit):
+        print('[!] KeyboardInterrupt received. %d users retrieved' % len(users))
 
     reactions = reactions[:args.limit_reactions]
     commenters = commenters[:args.limit_comments]
     users = list(set(reactions).union(set(commenters)))
     print_statistics(commenters,reactions)
     users = fill_user_ids(driver,users)
+
     if args.output:
         store_pivots(users,args.output)
     else:

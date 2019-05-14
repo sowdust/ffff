@@ -4,6 +4,7 @@ Build a relationship graph of a target user Facebook friendships.
 
 Partially reconstruct hidden friend lists by using the "mutual friends" functionality. Requires knowing at least another account having at least one mutual friend with the target.
 
+The auxiliary script fint.py can retrieve users who have interacted with a given target profile and can be used as an input to ffff.py
 
 ## Disclaimer
 
@@ -31,13 +32,19 @@ The mutual friends functionality only works if at least one of the two users com
 Furthermore, Facebook limits the number of mutual friends that are shown. It seems that using different accounts sometimes lead to different results. It might be worth giving a try - maybe using accounts from different locations.
 
 
-## Prerequisites
+## Installation
 
-The script works in Python 3 with the libraries `selenium`, `argparse` and  `networkx`. You can install them by running:
+The script requires Python 3 and the libraries `selenium`, `argparse` and  `networkx`. 
+
+You can download the repository as a zip file or clone it:
+
+```git clone https://github.com/sowdust/ffff.git```
+
+Install the requirements:
 
 ```pip3 install -r requirements.txt```
 
-As of now the script supports only Firefox webdriver. The [geckodriver executable](https://github.com/mozilla/geckodriver/releases) must be downloaded and stored locally.
+As of now the script supports only Firefox webdriver. The [geckodriver executable](https://github.com/mozilla/geckodriver/releases) must be downloaded and stored locally. I suggest you store it inside the ffff folder.
 Support for more webdrivers can be easily added if necessary - just ask!
 
 
@@ -48,7 +55,7 @@ Support for more webdrivers can be easily added if necessary - just ask!
 
 #### TL;DR:
 
-To run the script the following information is required:
+To run the script ffff the following information is required:
 
 * Valid Facebook credentials (user/password)
 * Target account Facebook id
