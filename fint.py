@@ -301,14 +301,10 @@ def main():
 
         commenters += parse_commenters(driver.page_source)
         if len(commenters) < args.limit_comments:
-            commenters += get_all_comments(driver,url)
-        else:
-            print('[!] Comments limit %d reached' % args.limit_comments)
+            commenters += get_all_comments(driver,url,limit=args.limit_comments)
 
         if len(reactions) < args.limit_reactions:
-            reactions += get_all_reactions(driver,url)
-        else:
-            print('[!] Reactions limit %d reached' % args.limit_reactions)
+            reactions += get_all_reactions(driver,url,limit=args.limit_reactions)
 
     reactions = reactions[:args.limit_reactions]
     commenters = commenters[:args.limit_comments]
