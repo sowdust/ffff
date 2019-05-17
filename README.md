@@ -6,6 +6,8 @@ Partially reconstruct hidden friend lists by using the "mutual friends" function
 
 The auxiliary script fint.py can retrieve users who have interacted with a given target profile and can be used as an input to ffff.py
 
+[Here](https://techblog.mediaservice.net/2019/05/find-hidden-friends-and-community-for-any-facebook-user/?_thumbnail_id=479) is a detailed blog post about the tools and with a practical example.
+
 ## Disclaimer
 
 Scraping without written permission is against Facebook [Terms of Services](https://www.facebook.com/apps/site_scraping_tos_terms.php).
