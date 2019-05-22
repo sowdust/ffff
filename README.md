@@ -2,11 +2,11 @@
 
 Build a relationship graph of a target user Facebook friendships.
 
-Partially reconstruct hidden friend lists by using the "mutual friends" functionality. Requires knowing at least another account having at least one mutual friend with the target.
+Partially reconstruct hidden friendlists by using the "mutual friends" functionality. Requires knowing at least another account having at least one mutual friend with the target.
 
 The auxiliary script fint.py can retrieve users who have interacted with a given target profile and can be used as an input to ffff.py
 
-[Here](https://techblog.mediaservice.net/2019/05/find-hidden-friends-and-community-for-any-facebook-user/?_thumbnail_id=479) is a detailed blog post about the tools and with a practical example.
+[Here](https://techblog.mediaservice.net/2019/05/find-hidden-friends-and-community-for-any-facebook-user/?_thumbnail_id=479) is a detailed blog post about the tools, including a practical example.
 
 ## Disclaimer
 
@@ -30,7 +30,7 @@ It is also possible to keep track of the relationships between users along the w
 
 ## Limitations
 
-The mutual friends functionality only works if at least one of the two users compared have their friend list public. 
+The mutual friends functionality only works if at least one of the two users compared have their friendlists public. 
 Furthermore, Facebook limits the number of mutual friends that are shown. It seems that using different accounts sometimes lead to different results. It might be worth giving a try - maybe using accounts from different locations.
 
 
@@ -174,7 +174,7 @@ The session can be stopped (Ctrl+C) and resumed at a later time:
 
 Use fint.py to find potential pivot accounts for target user 111111111, using the most recent 10 stories and 5 photos published, using a maximum of 100 comments and 1000 reactions: 
 ```
-python fint.py -fu fbuser@mediaservice.net -fp fbpassword -d geckodriver.exe -t 4 -ls 10 -lp 5 -lc 100 -lr 1000
+python fint.py -fu fbuser@mediaservice.net -fp fbpassword -d geckodriver.exe -t 111111111 -ls 10 -lp 5 -lc 100 -lr 1000
 ```
 
 Build the community graph of target user 111111111 with public friend list, showing the browser window (without using option `-q`). Geckodriver file is stored in `C:`:
