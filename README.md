@@ -10,7 +10,7 @@ The auxiliary script fint.py can retrieve users who have interacted with a given
 
 ## Disclaimer
 
-Scraping without written permission is against Facebook [Terms of Services](https://www.facebook.com/apps/site_scraping_tos_terms.php).
+Scraping without written permission is against Facebook [Terms of Services](https://www.facebook.com/apps/site_scraping_tos_terms.php): therefore you should not use any scraping tool without proper written authorization. All the information provided in this and related articles are for educational purposes only. The authors or are in no way responsible for any misuse of the information or the code provided.
 
 
 ## About
