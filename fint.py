@@ -5,7 +5,7 @@ from collections import Counter
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
-
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 
 VERSION = "0.1"
@@ -26,14 +26,32 @@ def do_login(driver,usr,pwd):
 
     log('[*] Trying to log in with user %s' % usr)
     driver.get('https://www.facebook.com')
-    assert "Facebook" in driver.title
-    elem = driver.find_element_by_id('email')
-    elem.send_keys(usr)
-    elem = driver.find_element_by_id('pass')
-    elem.send_keys(pwd)
+    try:
+        elem = driver.find_element_by_id('email')
+        elem.send_keys(usr)
+        elem = driver.find_element_by_id('pass')
+        elem.send_keys(pwd)
+    except NoSuchElementException:
+        elem = driver.find_element_by_name('email')
+        elem.send_keys(usr)
+        elem = driver.find_element_by_name('pass')
+        elem.send_keys(pwd)
+    except Exception as ex:
+        print('[!] Error while logging in:')
+        print(ex)
+        sys.exit(0)
     elem.send_keys(Keys.RETURN)
-    log('[*] Logged in')
     time.sleep(pause(2,3))
+
+
+def check_login(driver):
+    try:
+        time.sleep(pause(2,3))
+        navigationclick = driver.find_element_by_id('logoutMenu');
+    except NoSuchElementException:
+        print('[!] Not logged in. Did you use valid credentials?')
+        sys.exit(0)
+    log('[*] Logged in')
 
 
 def get_stories_urls(html,target):
@@ -279,6 +297,7 @@ def main():
     driver = webdriver.Firefox(executable_path=args.driver_path,options=options)
 
     do_login(driver,args.user,args.password)
+    check_login(driver)
 
     if args.target.isdigit():
         target_id = args.target
