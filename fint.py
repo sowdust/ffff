@@ -45,14 +45,13 @@ def do_login(driver,usr,pwd):
 
 
 def check_login(driver):
-    try:
-        time.sleep(pause(2,3))
-        navigationclick = driver.find_element_by_id('logoutMenu');
-    except NoSuchElementException:
+    time.sleep(pause(2,3))
+    if 'href="/me/"' not in driver.page_source:
         print('[!] Not logged in. Did you use valid credentials?')
         sys.exit(0)
-    log('[*] Logged in')
-
+    else:
+        log('[*] Logged in')
+    
 
 def get_stories_urls(html,target):
 
