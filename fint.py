@@ -46,7 +46,7 @@ def do_login(driver,usr,pwd):
 
 def check_login(driver):
     time.sleep(pause(2,3))
-    if 'href="/me/"' not in driver.page_source:
+    if 'href="https://www.facebook.com/?sk=ff"' not in driver.page_source:
         print('[!] Not logged in. Did you use valid credentials?')
         sys.exit(0)
     else:
