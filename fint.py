@@ -56,6 +56,30 @@ def check_login(driver):
         log('[*] Logged in')
 
 
+def get_own_friends(
+        driver):  # get a list of own friends to mitigate FB's counter-measure
+    time.sleep(pause(2, 3))
+    url_friends = 'https://mbasic.facebook.com/friends/center/friends'
+    driver.get(url_friends)
+    fbid_ownfriends = re.findall(r'(?<=\?uid=)\w+', driver.page_source)
+    return fbid_ownfriends
+    # this list will be use to generate random clicks on it
+
+
+def random_click(
+        fbid_ownfriends,
+        driver):  #this function generates a random click on a friend's profile
+    time.sleep(pause(2, 3))
+    url_main = 'https://mbasic.facebook.com/'
+    driver.get(url_main)
+    time.sleep(pause(2, 3))
+    friend_choice = random.choice(fbid_ownfriends)
+    url_friend_choice = url_main + friend_choice
+    time.sleep(pause(2, 3))
+    driver.get(url_friend_choice)
+    time.sleep(pause(2, 3))
+
+
 def get_stories_urls(html, target):
 
     # only return stories BY the user
@@ -212,16 +236,25 @@ def profile_picture(driver, target_username):
 
 
 # given a list of [username, name] returns a list of [id, name, username]
-def fill_user_ids(driver, users):
+def fill_user_ids(driver, fbid_ownfriends, users):
 
     res = []
+    users_nb = len(users)
+    if users_nb > 60:
+        print(
+            'Caution : your list has more than 50 profiles. You may be banned by the platform.'
+        )
     c = 0
     msg = '[*] Retreiving user ids... '
     try:
         for u in users:
             c += 1
+            if c % 30 == 0:  # every 30 profiles we make a pause
+                print("let's have a little break...")
+                random_click(fbid_ownfriends, driver)
+
             msg = '%s[*] Retreiving user ids... %d of %d' % ('\r' * len(msg),
-                                                             c, len(users))
+                                                             c, users_nb)
             print(msg, end='\r')
             time.sleep(pause())
             fbid = get_user_id(driver, u[0])
@@ -402,6 +435,9 @@ def main():
         target_id = get_user_id(driver, args.target)
         target_username = args.target
 
+    print('[*] Getting some of your own friends... ', end=" ")
+    fbid_ownfriends = get_own_friends(driver)
+
     print('[*] Selected target: %s (%s)' % (target_username, target_id))
 
     urls_to_visit = []
@@ -449,7 +485,7 @@ def main():
     commenters = commenters[:args.limit_comments]
     users = list(set(reactions).union(set(commenters)))
     print_statistics(commenters, reactions)
-    users = fill_user_ids(driver, users)
+    users = fill_user_ids(driver, fbid_ownfriends, users)
 
     if args.output:
         store_pivots(users, args.output)
