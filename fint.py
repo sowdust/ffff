@@ -239,12 +239,11 @@ def fill_user_ids(driver, users):
 
 # given a username, finds the fb user id from the source of the profile page
 def get_user_id(driver, username):
-
-    url = 'https://www.facebook.com/%s' % username.replace('/', '')
+    url = 'https://mbasic.facebook.com/%s' % username.replace('/', '')
     driver.get(url)
-    fbid = re.findall('fb://(profile|page)/([0-9]+)', driver.page_source)
+    fbid = re.findall(r'(?<=&amp;id=)\w+', driver.page_source)
     if fbid:
-        return fbid[0][1]
+        return fbid[0]
     else:
         print('[!] Error while getting id of user %s' % username)
         return -1
