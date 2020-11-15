@@ -242,9 +242,9 @@ def get_user_id(driver, username):
 
     url = 'https://www.facebook.com/%s' % username.replace('/', '')
     driver.get(url)
-    fbid = re.findall('fb://(profile|page)/([0-9]+)', driver.page_source)
+    fbid = re.findall('{"scale":1,"userID":"([0-9]+)"}', driver.page_source)
     if fbid:
-        return fbid[0][1]
+        return fbid[0]
     else:
         print('[!] Error while getting id of user %s' % username)
         return -1
