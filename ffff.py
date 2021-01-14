@@ -81,7 +81,7 @@ def do_login(driver,usr,pwd):
 
 
 def check_login(driver):
-    time.sleep(pause(2,3))
+    time.sleep(pause(3, 4))
     if 'href="/me/"' not in driver.page_source:
         print('[!] Not logged in. Did you use valid credentials?')
         sys.exit(0)

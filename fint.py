@@ -48,9 +48,10 @@ def do_login(driver, usr, pwd):
 
 
 def check_login(driver):
-    time.sleep(pause(2, 3))
+    time.sleep(pause(3, 4))
     if 'href="/me/"' not in driver.page_source:
         print('[!] Not logged in. Did you use valid credentials?')
+        print(driver.page_source)
         sys.exit(0)
     else:
         log('[*] Logged in')
@@ -242,7 +243,7 @@ def get_user_id(driver, username):
 
     url = 'https://www.facebook.com/%s' % username.replace('/', '')
     driver.get(url)
-    fbid = re.findall('{"scale":1,"userID":"([0-9]+)"}', driver.page_source)
+    fbid = re.findall('"scale":1,"userID":"([0-9]+)"}', driver.page_source)
     if fbid:
         return fbid[0]
     else:
