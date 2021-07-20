@@ -30,6 +30,12 @@ def do_login(driver, usr, pwd):
     log('[*] Trying to log in with user %s' % usr)
     driver.get('https://www.facebook.com')
     try:
+        elem = driver.find_element_by_xpath('//button[@data-cookiebanner="accept_button"]')
+        elem.click()
+    except Exception as ex:
+        print('[!] Error while accepting cookies:')
+        print(ex)        
+    try:
         elem = driver.find_element_by_id('email')
         elem.send_keys(usr)
         elem = driver.find_element_by_id('pass')
@@ -409,6 +415,7 @@ def main():
     urls_to_visit = []
     commenters = []
     reactions = []
+    users = []
 
     print('[*] Getting photos links... ', end=" ")
     photos = get_all_photos(driver, target_id,
