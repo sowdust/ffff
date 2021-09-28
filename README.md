@@ -1,5 +1,9 @@
 # FFFF - FFFF Finds Facebook Friends
 
+```diff
+- Jul 2020: This project is discontinued: Facebook does not show mutual friends anymore.
+```
+
 Build a relationship graph of a target user Facebook friendships.
 
 Partially reconstruct hidden friendlists by using the "mutual friends" functionality. Requires knowing at least another account having at least one mutual friend with the target.
