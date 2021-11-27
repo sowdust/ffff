@@ -1,7 +1,7 @@
 # FFFF - FFFF Finds Facebook Friends
 
 ```diff
-- Jul 2020: This project is discontinued: Facebook does not show mutual friends anymore.
+- Jul 2021: This project is discontinued: Facebook does not show mutual friends anymore.
 ```
 
 Build a relationship graph of a target user Facebook friendships.
